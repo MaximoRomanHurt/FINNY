@@ -7,7 +7,7 @@ from flask_login import current_user
 from backend.services.budget_service import BudgetService
 from backend.utils.auth_decorators   import login_required_json
 
-budget_bp = Blueprint('budget', __name__, url_prefix='/presupuesto')
+budget_bp = Blueprint('budget', __name__, url_prefix='/budget')
 
 
 @budget_bp.route('', methods=['GET'])
@@ -30,6 +30,6 @@ def set_budget():
         if amount < 0:
             return jsonify({'error': 'El presupuesto no puede ser negativo.'}), 400
         budget = BudgetService.set(current_user.id, amount)
-        return jsonify({'message': 'Presupuesto guardado.', 'budget': budget}), 200
+        return jsonify({'message': 'Presupuesto guardado.', 'budget': budget}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500

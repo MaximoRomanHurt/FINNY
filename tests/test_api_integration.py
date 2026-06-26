@@ -10,8 +10,8 @@ Contratos reales de la API FINNY verificados en código fuente:
   - POST /compras → 201 {message, purchase: {...}}
   - GET /compras/<pid> → 200 {purchase: {...}}
   - DELETE /compras/<pid> → 200 {message}
-  - GET /presupuesto → 200 {monthly_amount, month, ...}
-  - POST /presupuesto → 200 {message, budget} — campo requerido: "amount"
+  - GET /budget → 200 {monthly_amount, month, ...}
+  - POST /budget → 201 {message, budget} — campo requerido: "amount"
   - GET /dashboard → 200 {budget, month_spent, remaining, ...}
 """
 import pytest
@@ -243,9 +243,9 @@ class TestPurchaseEndpoints:
 
 
 class TestBudgetEndpoints:
-    """Pruebas de integración de /presupuesto.
+    """Pruebas de integración de /budget.
     
-    Contrato real: POST /presupuesto requiere campo 'amount' (no 'monthly_amount').
+    Contrato real: POST /budget requiere campo 'amount' (no 'monthly_amount').
     """
 
     def _login(self, client, email='budget@finny.com'):
@@ -256,31 +256,31 @@ class TestBudgetEndpoints:
 
     def test_get_budget_empty(self, client):
         self._login(client)
-        resp = client.get('/presupuesto')
+        resp = client.get('/budget')
         assert resp.status_code == 200
 
     def test_set_budget(self, client):
-        """POST /presupuesto requiere campo 'amount' según budget_routes.py."""
+        """POST /budget requiere campo 'amount' según budget_routes.py."""
         self._login(client)
-        resp = client.post('/presupuesto', json={'amount': 500.0})
+        resp = client.post('/budget', json={'amount': 500.0})
         data = resp.get_json()
-        assert resp.status_code == 200
+        assert resp.status_code == 201
         assert 'budget' in data or 'message' in data
 
     def test_set_budget_missing_amount_field(self, client):
         """Sin campo 'amount' debe retornar 400."""
         self._login(client)
-        resp = client.post('/presupuesto', json={'monthly_amount': 500.0})
+        resp = client.post('/budget', json={'monthly_amount': 500.0})
         assert resp.status_code == 400
 
     def test_set_budget_negative_amount(self, client):
         """Presupuesto negativo debe retornar 400."""
         self._login(client)
-        resp = client.post('/presupuesto', json={'amount': -100.0})
+        resp = client.post('/budget', json={'amount': -100.0})
         assert resp.status_code == 400
 
     def test_set_budget_unauthenticated(self, client):
-        resp = client.post('/presupuesto', json={'amount': 500.0})
+        resp = client.post('/budget', json={'amount': 500.0})
         assert resp.status_code == 401
 
 
